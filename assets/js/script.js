@@ -1,3 +1,5 @@
+var tasksInProgressEl = document.querySelector("#tasks-in-progress");
+var tasksCompletedEl = document.querySelector("#tasks-completed");
 var pageContentEl = document.querySelector("#page-content");
 var taskIdCounter = 0;
 var tasksToDoEl = document.querySelector("#tasks-to-do");
@@ -17,20 +19,22 @@ var taskFormHandler = function(event) {
   var isEdit = formEl.hasAttribute("data-task-id");
 // PUT THIS BELOW `var isEdit = ...` in `taskFormHandler()`
 
-// has data attribute, so get task id and call function to complete edit process
-if (isEdit) {
-  var taskId = formEl.getAttribute("data-task-id");
-  completeEditTask(taskNameInput, taskTypeInput, taskId);
-} 
-// no data attribute, so create object as normal and pass to createTaskEl function
-else {
-  var taskDataObj = {
-    name: taskNameInput,
-    type: taskTypeInput
-  };
+      // has data attribute, so get task id and call function to complete edit process
+      if (isEdit) {
+        var taskId = formEl.getAttribute("data-task-id");
+        completeEditTask(taskNameInput, taskTypeInput, taskId);
+      } 
 
+      // no data attribute, so create object as normal and pass to createTaskEl function
+      else {
+        var taskDataObj = {
+          name: taskNameInput,
+          type: taskTypeInput
+        };
+  
   createTaskEl(taskDataObj);
-}}
+  }
+}
 
 var completeEditTask = function(taskName, taskType, taskId) {
   // find the matching task list item
@@ -44,6 +48,8 @@ alert("Task Updated!");
 
 };
 
+formEl.removeAttribute("data-task-id");
+document.querySelector("#save-task").textContent = "Add Task";
 
 formEl.addEventListener("submit", taskFormHandler);
 
@@ -56,6 +62,9 @@ listItemEl.className = "task-item";
 
 // add task id as a custom attribute
 listItemEl.setAttribute("data-task-id", taskIdCounter);
+
+listItemEl.setAttribute("draggable", "true");
+
 
 // create div to hold task info and add to list item
 var taskInfoEl = document.createElement("div");
@@ -195,5 +204,63 @@ var taskStatusChangeHandler = function(event) {
 
   };
 
+
+
+var dragTaskHandler = function(event) {
+  var taskId = event.target.getAttribute("data-task-id");
+  event.dataTransfer.setData("text/plain", taskId);
+
+}
+
+var dropZoneDragHandler = function(event) {
+  var taskListEl = event.target.closest(".task-list");
+  if (taskListEl) {
+    event.preventDefault();
+    taskListEl.setAttribute("style", "background: rgba(68, 233, 255, 0.7); border-style: dashed;");
+
+    console.dir(taskListEl);
+    
+  }
+};
+
+
+pageContentEl.addEventListener("dragover", dropZoneDragHandler);
+
+
+
+var dropTaskHandler = function(event) {
+  var id = event.dataTransfer.getData("text/plain");
+  var draggableElement = document.querySelector("[data-task-id='" + id + "']");
+  var dropZoneEl = event.target.closest(".task-list");
+  var statusType = dropZoneEl.id;
+// set status of task based on dropZone id
+var statusSelectEl = draggableElement.querySelector("select[name='status-change']");
+if (statusType === "tasks-to-do") {
+  statusSelectEl.selectedIndex = 0;
+} 
+else if (statusType === "tasks-in-progress") {
+  statusSelectEl.selectedIndex = 1;
+} 
+else if (statusType === "tasks-completed") {
+  statusSelectEl.selectedIndex = 2;
+}
+
+dropZoneEl.removeAttribute("style");
+dropZoneEl.appendChild(draggableElement);
+
+};
+
+
+
+var dragLeaveHandler = function(event) {
+  var taskListEl = event.target.closest(".task-list");
+  if (taskListEl) {
+    taskListEl.removeAttribute("style");
+  
+}
+}
+
 pageContentEl.addEventListener("change", taskStatusChangeHandler);
+pageContentEl.addEventListener("drop", dropTaskHandler);
+pageContentEl.addEventListener("dragleave", dragLeaveHandler);
 
