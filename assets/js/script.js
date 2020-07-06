@@ -337,6 +337,10 @@ var saveTasks = function() {
 
 }
 
+var loadTasks = function() {
+  
+}
+
 pageContentEl.addEventListener("dragstart", dragTaskHandler);
 pageContentEl.addEventListener("dragleave", dragLeaveHandler);
 pageContentEl.addEventListener("dragover", dropZoneDragHandler);
